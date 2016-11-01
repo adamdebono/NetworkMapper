@@ -26,7 +26,7 @@ public protocol NetworkRequest: URLRequestConvertible {
 }
 
 public extension NetworkRequest {
-    func getRequestDetails() -> RequestDetails {
+    public func getRequestDetails() -> RequestDetails {
         return RequestDetails(
             method: self.method,
             url: self.url,
@@ -42,25 +42,25 @@ public extension NetworkRequest {
         return try URLEncoding.methodDependent.encode(request, with: requestDetails.parameters)
     }
     
-    private func complete<R, T>(error: Error, response: DataResponse<R>?, completionHandler: (DataResponse<T>) -> Void) {
+    public func complete<R, T>(error: Error, response: DataResponse<R>?, completionHandler: (DataResponse<T>) -> Void) {
         let result = Result<T>.failure(error)
         let errorResponse = DataResponse(request: response?.request, response: response?.response, data: response?.data, result: result)
         completionHandler(errorResponse)
     }
-    private func complete<R, T>(object: T, response: DataResponse<R>, completionHandler: (DataResponse<T>) -> Void) {
+    public func complete<R, T>(object: T, response: DataResponse<R>, completionHandler: (DataResponse<T>) -> Void) {
         let result = Result<T>.success(object)
         let successResponse = DataResponse(request: response.request, response: response.response, data: response.data, result: result)
         completionHandler(successResponse)
     }
     
     @discardableResult
-    func responseJSON(completionHandler: @escaping ((DataResponse<Any>) -> Void)) -> DataRequest {
+    public func responseJSON(completionHandler: @escaping ((DataResponse<Any>) -> Void)) -> DataRequest {
         return Alamofire.request(self).responseJSON { response in
             self.processJSONResponse(response: response, completionHandler: completionHandler)
         }
     }
     
-    private func processJSONResponse(response: DataResponse<Any>, completionHandler: @escaping ((DataResponse<Any>) -> Void)) {
+    public func processJSONResponse(response: DataResponse<Any>, completionHandler: @escaping ((DataResponse<Any>) -> Void)) {
         switch response.result {
         case .failure(let error):
             if let error = error as? URLError {
@@ -81,7 +81,7 @@ public extension NetworkRequest {
             self.processObjectResponse(response: response, completionHandler: completionHandler)
         }
     }
-    private func processObjectResponse(response: DataResponse<Any>, completionHandler: @escaping ((DataResponse<ResponseType>) -> Void)) {
+    public func processObjectResponse(response: DataResponse<Any>, completionHandler: @escaping ((DataResponse<ResponseType>) -> Void)) {
         switch response.result {
         case .failure(let error):
             self.complete(error: error, response: response, completionHandler: completionHandler)
