@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.watchos.deployment_target = "2.0"
   s.tvos.deployment_target = "9.0"
   
-  s.source       = { :git => "http://github.com/adamdebono/NetworkMapper.git", :tag => s.version }
+  s.source       = { :git => "https://github.com/adamdebono/NetworkMapper.git", :tag => s.version }
   s.source_files  = "Source/*.swift"
 
   s.dependency "Alamofire", "~> 4.0.0"
