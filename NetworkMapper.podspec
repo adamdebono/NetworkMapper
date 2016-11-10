@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "NetworkMapper"
-  s.version      = "0.0.1"
+  s.version      = "0.0.2"
   s.summary      = "Map JSON responses to Swift Objects"
   s.homepage     = "http://github.com/adamdebono/NetworkMapper"
   s.license      = { :type => "MIT", :file => "LICENSE" }
