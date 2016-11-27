@@ -4,9 +4,12 @@ import Foundation
 import Unbox
 
 public protocol NetworkObjectRequest: NetworkRequest {
-    associatedtype ResponseType: Unboxable
+    associatedtype ResponseType: NetworkObjectResponse
     
     func responseDecoded(_ response: ResponseType)
+}
+public protocol NetworkObjectResponse: Unboxable {
+  
 }
 
 public extension NetworkObjectRequest {
@@ -39,4 +42,6 @@ public extension NetworkObjectRequest {
             }
         }
     }
+    
+    public func responseDecoded(_ response: ResponseType) {}
 }
