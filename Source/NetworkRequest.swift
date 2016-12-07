@@ -111,6 +111,32 @@ public extension NetworkRequest {
         })
     }
     
+    /// Performs an upload request based on the attributes of this instance, and
+    /// retrieves the response data
+    ///
+    /// - parameter data:               The data to upload
+    /// - parameter completionHandler:  A callback which is run on completion of
+    ///                                 the request
+    ///
+    /// - returns: The request that was sent
+    @discardableResult
+    public func uploadResponseData(_ data: Data, completionHandler: @escaping ((DataResponse<Data>) -> Void)) -> UploadRequest {
+        return Alamofire.upload(data, with: self).responseData(completionHandler: { (response) in
+            switch response.result {
+            case .failure(let error):
+                if let error = error as? URLError {
+                    if error.code == URLError.cancelled {
+                        return
+                    }
+                }
+            default:
+                break
+            }
+            
+            completionHandler(response)
+        })
+    }
+    
     // MARK: JSON
     
     /// Performs a network request based on the attributes of this instance, and
@@ -125,6 +151,42 @@ public extension NetworkRequest {
         return Alamofire.request(self).responseJSON { response in
             self.processJSONResponse(response: response, completionHandler: completionHandler)
         }
+    }
+    
+    /// Performs an upload request based on the attributes of this instance, and
+    /// retrieves the response json
+    ///
+    /// - parameter data:               The data to upload
+    /// - parameter completionHandler:  A callback which is run on completion of
+    ///                                 the request
+    ///
+    /// - returns: The request that was sent
+    @discardableResult
+    public func uploadResponseJSON(_ data: Data, completionHandler: @escaping ((DataResponse<Any>) -> Void)) -> UploadRequest {
+        return Alamofire.upload(data, with: self).responseJSON { response in
+            self.processJSONResponse(response: response, completionHandler: completionHandler)
+        }
+    }
+    
+    /// Performs an upload request based on the attributes of this instance, and
+    /// retrieves the response json
+    ///
+    /// - parameter multipartFormData:  The closure used to append body parts to
+    ///                                 the `MultipartFormData`.
+    /// - parameter completionHandler:  A callback which is run on completion of
+    ///                                 the request
+    ///
+    /// - returns: The request that was sent
+    public func uploadResponseJSON(multipartFormData: @escaping ((MultipartFormData) -> Void), completionHandler: @escaping ((DataResponse<Any>) -> Void)) {
+        Alamofire.upload(multipartFormData: multipartFormData, with: self, encodingCompletion: { encodingResult in
+            switch encodingResult {
+            case .success(let upload, _, _):
+                upload.responseJSON(completionHandler: completionHandler)
+            case .failure(let error):
+                let response: DataResponse<Any>? = nil
+                self.complete(error: error, response: response, completionHandler: completionHandler)
+            }
+        })
     }
     
     /// Processes a JSON response from the server

@@ -33,6 +33,37 @@ public extension NetworkObjectRequest {
             self.processObjectResponse(response: response, completionHandler: completionHandler)
         }
     }
+    
+    /// Performs an upload request based on the attributes of this instance, and
+    /// retrieves the response json
+    ///
+    /// - parameter data:               The data to upload
+    /// - parameter completionHandler:  A callback which is run on completion of
+    ///                                 the request
+    ///
+    /// - returns: The request that was sent
+    @discardableResult
+    public func uploadResponseObject(_ data: Data, completionHandler: @escaping ((DataResponse<ResponseType>) -> Void)) -> UploadRequest {
+        return self.uploadResponseJSON(data, completionHandler: { response in
+            self.processObjectResponse(response: response, completionHandler: completionHandler)
+        })
+    }
+    
+    /// Performs an upload request based on the attributes of this instance, and
+    /// retrieves the response object
+    ///
+    /// - parameter multipartFormData:  The closure used to append body parts to
+    ///                                 the `MultipartFormData`.
+    /// - parameter completionHandler:  A callback which is run on completion of
+    ///                                 the request
+    ///
+    /// - returns: The request that was sent
+    public func uploadResponseObject(multipartFormData: @escaping ((MultipartFormData) -> Void), completionHandler: @escaping ((DataResponse<ResponseType>) -> Void)) {
+        return self.uploadResponseJSON(multipartFormData: multipartFormData, completionHandler: { response in
+            self.processObjectResponse(response: response, completionHandler: completionHandler)
+        })
+    }
+    
     /// Processes an object response from the server
     ///
     /// This can be overridden to provide custom processing. The default
