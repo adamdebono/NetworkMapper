@@ -8,7 +8,7 @@ A framework to map JSON responses to swift objects, based on
 
 ### Cocoapods
 ```ruby
-pod 'NetworkMapper', '~> 0.0.3'
+pod 'NetworkMapper', '~> 0.1.1'
 ```
 
 ## Usage

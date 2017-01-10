@@ -14,16 +14,18 @@ public struct RequestDetails: URLRequestConvertible {
     /// Parameters are encoded and added to the request based on the method of
     /// the request
     public let parameters: [String: Any]?
+    /// Any headers (or nil) for the request
+    public var headers: HTTPHeaders?
     
-    public init(method: HTTPMethod, url: URL, parameters: [String: Any]? = nil) {
+    public init(method: HTTPMethod, url: URL, parameters: [String: Any]?, headers: HTTPHeaders?) {
         self.method = method
         self.url = url
         self.parameters = parameters
+        self.headers = headers
     }
     
     public func asURLRequest() throws -> URLRequest {
-        var request = URLRequest(url: self.url)
-        request.httpMethod = self.method.rawValue
+        var request = try URLRequest(url: self.url, method: self.method, headers: self.headers)
         
         return try URLEncoding.methodDependent.encode(request, with: self.parameters)
     }
@@ -40,6 +42,8 @@ public protocol NetworkRequest: URLRequestConvertible {
     /// Parameters are encoded and added to the request based on the method of
     /// the request
     var parameters: [String: Any]? { get }
+    /// Any headers (or nil) for the request
+    var headers: HTTPHeaders? { get }
 }
 public extension NetworkRequest {
     /// Creates a `RequestDetails` object based on the attributes of the
@@ -48,7 +52,8 @@ public extension NetworkRequest {
         return RequestDetails(
             method: self.method,
             url: self.url,
-            parameters: self.parameters
+            parameters: self.parameters,
+            headers: self.headers
         )
     }
     
