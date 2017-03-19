@@ -25,7 +25,7 @@ public struct RequestDetails: URLRequestConvertible {
     }
     
     public func asURLRequest() throws -> URLRequest {
-        var request = try URLRequest(url: self.url, method: self.method, headers: self.headers)
+        let request = try URLRequest(url: self.url, method: self.method, headers: self.headers)
         
         return try URLEncoding.methodDependent.encode(request, with: self.parameters)
     }
@@ -44,6 +44,21 @@ public protocol NetworkRequest: URLRequestConvertible {
     var parameters: [String: Any]? { get }
     /// Any headers (or nil) for the request
     var headers: HTTPHeaders? { get }
+
+    /// A callback function which is called after the request succeeds,
+    /// immediately before the callback
+    ///
+    /// The default implementation of this funciton does nothing.
+    ///
+    /// - parameter response:   The decoded response in the format requested
+    func onSuccess<T>(_ response: T) -> Void
+    /// A callback function which is called after the request fails, immediately
+    /// before the callback
+    ///
+    /// The default implementation of this funciton does nothing.
+    ///
+    /// - parameter error:  The error that caused the failure
+    func onError(_ error: Error) -> Void
 }
 public extension NetworkRequest {
     /// Creates a `RequestDetails` object based on the attributes of the
@@ -71,6 +86,8 @@ public extension NetworkRequest {
     /// - parameter response:           The response from the Alamofire
     /// - parameter completionHandler:  The completion handler to run
     public func complete<R, T>(error: Error, response: DataResponse<R>?, completionHandler: (DataResponse<T>) -> Void) {
+        self.onError(error)
+
         let result = Result<T>.failure(error)
         let errorResponse = DataResponse(request: response?.request, response: response?.response, data: response?.data, result: result)
         completionHandler(errorResponse)
@@ -84,11 +101,16 @@ public extension NetworkRequest {
     /// - parameter response:           The response from Alamofire
     /// - parameter completionHandler:  The completion handler to run
     public func complete<R, T>(object: T, response: DataResponse<R>, completionHandler: (DataResponse<T>) -> Void) {
+        self.onSuccess(object)
+
         let result = Result<T>.success(object)
         let successResponse = DataResponse(request: response.request, response: response.response, data: response.data, result: result)
         completionHandler(successResponse)
     }
-    
+
+    public func onSuccess<T>(_ response: T) {}
+    public func onError(_ error: Error) {}
+
     // MARK: Data
     
     /// Performs a network request based on the attributes of this instance, and

@@ -8,7 +8,7 @@ A framework to map JSON responses to swift objects, based on
 
 ### Cocoapods
 ```ruby
-pod 'NetworkMapper', '~> 0.1.1'
+pod 'NetworkMapper', '~> 0.1.2'
 ```
 
 ## Usage
@@ -57,7 +57,7 @@ implementation of which does nothing.
 ```swift
 struct ExampleObjectRequest: NetworkObjectRequest {
   typealias ResponseType = ExampleObjectResponse
-  
+
   let method: HTTPMethod = .get
   let url: URL = URL(string: "https://example.org/example/users")
   let parameters: [String:Any]? = nil
@@ -66,7 +66,7 @@ struct ExampleObjectRequest: NetworkObjectRequest {
 struct ExampleObjectResponse: NetworkObjectResponse {
   let users: [User]
   let pageNumber: Int
-  
+
   init(unboxer: Unboxable) throws {
     self.users = try unboxer.unbox(key: "users")
     self.pageNumber = try unboxer.unbox(keyPath: "pagination.page_number")
@@ -76,7 +76,7 @@ struct ExampleObjectResponse: NetworkObjectResponse {
 struct User: Unboxable {
   let name: String
   let age: Int
-  
+
   init(unboxer: Unboxable) throws {
     self.name = try unboxer.unbox(key: "name")
     self.name = try unboxer.unbox(key: "age")

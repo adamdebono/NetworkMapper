@@ -7,12 +7,6 @@ import Unbox
 public protocol NetworkObjectRequest: NetworkRequest {
     /// The type of the response object
     associatedtype ResponseType: NetworkObjectResponse
-    
-    /// A callback function to which is called immediately after the response is
-    /// decoded, but before the callback
-    ///
-    /// The default implementation of this funciton does nothing
-    func responseDecoded(_ response: ResponseType)
 }
 /// A protocol to define network response objects
 public protocol NetworkObjectResponse: Unboxable {
@@ -86,7 +80,6 @@ public extension NetworkObjectRequest {
             
             do {
                 let object: ResponseType = try unbox(dictionary: value)
-                self.responseDecoded(object)
                 self.complete(object: object, response: response, completionHandler: completionHandler)
             } catch let unboxError as UnboxError {
                 self.complete(error: unboxError, response: response, completionHandler: completionHandler)
@@ -96,6 +89,4 @@ public extension NetworkObjectRequest {
             }
         }
     }
-    
-    public func responseDecoded(_ response: ResponseType) {}
 }
