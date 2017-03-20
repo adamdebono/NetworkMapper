@@ -51,14 +51,14 @@ public protocol NetworkRequest: URLRequestConvertible {
     /// The default implementation of this funciton does nothing.
     ///
     /// - parameter response:   The decoded response in the format requested
-    func onSuccess<T>(_ response: T) -> Void
+    func onSuccess<T>(_ response: T, request: URLRequest?) -> Void
     /// A callback function which is called after the request fails, immediately
     /// before the callback
     ///
     /// The default implementation of this funciton does nothing.
     ///
     /// - parameter error:  The error that caused the failure
-    func onError(_ error: Error) -> Void
+    func onError(_ error: Error, request: URLRequest?) -> Void
 }
 public extension NetworkRequest {
     /// Creates a `RequestDetails` object based on the attributes of the
@@ -86,7 +86,7 @@ public extension NetworkRequest {
     /// - parameter response:           The response from the Alamofire
     /// - parameter completionHandler:  The completion handler to run
     public func complete<R, T>(error: Error, response: DataResponse<R>?, completionHandler: (DataResponse<T>) -> Void) {
-        self.onError(error)
+        self.onError(error, request: response?.request)
 
         let result = Result<T>.failure(error)
         let errorResponse = DataResponse(request: response?.request, response: response?.response, data: response?.data, result: result)
@@ -101,15 +101,15 @@ public extension NetworkRequest {
     /// - parameter response:           The response from Alamofire
     /// - parameter completionHandler:  The completion handler to run
     public func complete<R, T>(object: T, response: DataResponse<R>, completionHandler: (DataResponse<T>) -> Void) {
-        self.onSuccess(object)
+        self.onSuccess(object, request: response.request)
 
         let result = Result<T>.success(object)
         let successResponse = DataResponse(request: response.request, response: response.response, data: response.data, result: result)
         completionHandler(successResponse)
     }
 
-    public func onSuccess<T>(_ response: T) {}
-    public func onError(_ error: Error) {}
+    public func onSuccess<T>(_ response: T, request: URLRequest?) {}
+    public func onError(_ error: Error, request: URLRequest?) {}
 
     // MARK: Data
     
