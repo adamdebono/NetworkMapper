@@ -33,6 +33,9 @@ public struct RequestDetails: URLRequestConvertible {
 
 /// A basic protocol to define network requests
 public protocol NetworkRequest: URLRequestConvertible {
+    /// The session manager to make the request on
+    var sessionManager: Alamofire.SessionManager { get }
+
     /// The HTTP method of the request
     var method: HTTPMethod { get }
     /// The url of the request
@@ -44,6 +47,11 @@ public protocol NetworkRequest: URLRequestConvertible {
     var parameters: [String: Any]? { get }
     /// Any headers (or nil) for the request
     var headers: HTTPHeaders? { get }
+
+    /// The validation block to run which validates requests.
+    ///
+    /// If this is not provided, default validation is used
+    var validation: DataRequest.Validation? { get }
 
     /// A callback function which is called after the request succeeds,
     /// immediately before the callback
@@ -122,20 +130,23 @@ public extension NetworkRequest {
     /// - returns: The request that was sent
     @discardableResult
     public func responseData(completionHandler: @escaping ((DataResponse<Data>) -> Void)) -> DataRequest {
-        return Alamofire.request(self).responseData(completionHandler: { response in
-            switch response.result {
-            case .failure(let error):
-                if let error = error as? URLError {
-                    if error.code == URLError.cancelled {
-                        return
+        return self.sessionManager
+            .request(self)
+            .validate(self.validation)
+            .responseData(completionHandler: { response in
+                switch response.result {
+                case .failure(let error):
+                    if let error = error as? URLError {
+                        if error.code == URLError.cancelled {
+                            return
+                        }
                     }
+                default:
+                    break
                 }
-            default:
-                break
-            }
-            
-            completionHandler(response)
-        })
+                
+                completionHandler(response)
+            })
     }
     
     /// Performs an upload request based on the attributes of this instance, and
@@ -148,20 +159,23 @@ public extension NetworkRequest {
     /// - returns: The request that was sent
     @discardableResult
     public func uploadResponseData(_ data: Data, completionHandler: @escaping ((DataResponse<Data>) -> Void)) -> UploadRequest {
-        return Alamofire.upload(data, with: self).responseData(completionHandler: { (response) in
-            switch response.result {
-            case .failure(let error):
-                if let error = error as? URLError {
-                    if error.code == URLError.cancelled {
-                        return
+        return self.sessionManager
+            .upload(data, with: self)
+            .validate(self.validation)
+            .responseData(completionHandler: { (response) in
+                switch response.result {
+                case .failure(let error):
+                    if let error = error as? URLError {
+                        if error.code == URLError.cancelled {
+                            return
+                        }
                     }
+                default:
+                    break
                 }
-            default:
-                break
-            }
-            
-            completionHandler(response)
-        })
+                
+                completionHandler(response)
+            })
     }
     
     // MARK: JSON
@@ -175,9 +189,12 @@ public extension NetworkRequest {
     /// - returns: The request that was sent
     @discardableResult
     public func responseJSON(completionHandler: @escaping ((DataResponse<Any>) -> Void)) -> DataRequest {
-        return Alamofire.request(self).responseJSON { response in
-            self.processJSONResponse(response: response, completionHandler: completionHandler)
-        }
+        return self.sessionManager
+            .request(self)
+            .validate(self.validation)
+            .responseJSON { response in
+                self.processJSONResponse(response: response, completionHandler: completionHandler)
+            }
     }
     
     /// Performs an upload request based on the attributes of this instance, and
@@ -190,9 +207,12 @@ public extension NetworkRequest {
     /// - returns: The request that was sent
     @discardableResult
     public func uploadResponseJSON(_ data: Data, completionHandler: @escaping ((DataResponse<Any>) -> Void)) -> UploadRequest {
-        return Alamofire.upload(data, with: self).responseJSON { response in
-            self.processJSONResponse(response: response, completionHandler: completionHandler)
-        }
+        return self.sessionManager
+            .upload(data, with: self)
+            .validate(self.validation)
+            .responseJSON { response in
+                self.processJSONResponse(response: response, completionHandler: completionHandler)
+            }
     }
     
     /// Performs an upload request based on the attributes of this instance, and
@@ -205,7 +225,7 @@ public extension NetworkRequest {
     ///
     /// - returns: The request that was sent
     public func uploadResponseJSON(multipartFormData: @escaping ((MultipartFormData) -> Void), completionHandler: @escaping ((DataResponse<Any>) -> Void)) {
-        Alamofire.upload(multipartFormData: multipartFormData, with: self, encodingCompletion: { encodingResult in
+        self.sessionManager.upload(multipartFormData: multipartFormData, with: self, encodingCompletion: { encodingResult in
             switch encodingResult {
             case .success(let upload, _, _):
                 upload.responseJSON(completionHandler: completionHandler)
@@ -235,7 +255,18 @@ public extension NetworkRequest {
         default:
             break
         }
-        
+
         completionHandler(response)
+    }
+}
+
+extension DataRequest {
+    @discardableResult
+    public func validate(_ optionalValidation: Validation?) -> Self {
+        if let validation = optionalValidation {
+            return self.validate(validation)
+        } else {
+            return self.validate()
+        }
     }
 }
