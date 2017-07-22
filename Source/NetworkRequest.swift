@@ -177,6 +177,26 @@ public extension NetworkRequest {
                 completionHandler(response)
             })
     }
+
+    /// Performs an upload request based on the attributes of this instance, and
+    /// retrieves the resonse data
+    ///
+    /// - parameter multipartFormData: The clouse used to append body parts to
+    ///                                the `MultipartFormData`
+    /// - parameter completionHandler: A callback which is run on completion of
+    ///                                the request
+    public func uploadResponseData(multipartFormData: @escaping ((MultipartFormData) -> Void), completionHandler: @escaping ((DataResponse<Data>) -> Void)) {
+        self.sessionManager
+            .upload(multipartFormData: multipartFormData, with: self, encodingCompletion: { encodingResult in
+                switch encodingResult {
+                case .success(let upload, _, _):
+                    upload.responseData(completionHandler: completionHandler)
+                case .failure(let error):
+                    let response: DataResponse<Data>? = nil
+                    self.complete(error: error, response: response, completionHandler: completionHandler)
+                }
+            })
+    }
     
     // MARK: JSON
     
@@ -222,8 +242,6 @@ public extension NetworkRequest {
     ///                                 the `MultipartFormData`.
     /// - parameter completionHandler:  A callback which is run on completion of
     ///                                 the request
-    ///
-    /// - returns: The request that was sent
     public func uploadResponseJSON(multipartFormData: @escaping ((MultipartFormData) -> Void), completionHandler: @escaping ((DataResponse<Any>) -> Void)) {
         self.sessionManager.upload(multipartFormData: multipartFormData, with: self, encodingCompletion: { encodingResult in
             switch encodingResult {

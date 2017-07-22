@@ -1,7 +1,6 @@
 
 import Alamofire
 import Foundation
-import Unbox
 
 /// A protocol to define network requests that map directly to response objects
 public protocol NetworkObjectRequest: NetworkRequest {
@@ -9,8 +8,8 @@ public protocol NetworkObjectRequest: NetworkRequest {
     associatedtype ResponseType: NetworkObjectResponse
 }
 /// A protocol to define network response objects
-public protocol NetworkObjectResponse: Unboxable {
-  
+public protocol NetworkObjectResponse: Decodable {
+
 }
 
 public extension NetworkObjectRequest {
@@ -23,7 +22,7 @@ public extension NetworkObjectRequest {
     /// - returns: The request that was sent
     @discardableResult
     public func responseObject(completionHandler: @escaping ((DataResponse<ResponseType>) -> Void)) -> DataRequest {
-        return self.responseJSON { response in
+        return self.responseData { response in
             self.processObjectResponse(response: response, completionHandler: completionHandler)
         }
     }
@@ -38,7 +37,7 @@ public extension NetworkObjectRequest {
     /// - returns: The request that was sent
     @discardableResult
     public func uploadResponseObject(_ data: Data, completionHandler: @escaping ((DataResponse<ResponseType>) -> Void)) -> UploadRequest {
-        return self.uploadResponseJSON(data, completionHandler: { response in
+        return self.uploadResponseData(data, completionHandler: { response in
             self.processObjectResponse(response: response, completionHandler: completionHandler)
         })
     }
@@ -50,10 +49,8 @@ public extension NetworkObjectRequest {
     ///                                 the `MultipartFormData`.
     /// - parameter completionHandler:  A callback which is run on completion of
     ///                                 the request
-    ///
-    /// - returns: The request that was sent
     public func uploadResponseObject(multipartFormData: @escaping ((MultipartFormData) -> Void), completionHandler: @escaping ((DataResponse<ResponseType>) -> Void)) {
-        return self.uploadResponseJSON(multipartFormData: multipartFormData, completionHandler: { response in
+        self.uploadResponseData(multipartFormData: multipartFormData, completionHandler: { response in
             self.processObjectResponse(response: response, completionHandler: completionHandler)
         })
     }
@@ -67,22 +64,14 @@ public extension NetworkObjectRequest {
     /// - parameter response:           The response to process
     /// - parameter completionHandler:  A callback which is run once processing
     ///                                 is complete
-    public func processObjectResponse(response: DataResponse<Any>, completionHandler: @escaping ((DataResponse<ResponseType>) -> Void)) {
+    public func processObjectResponse(response: DataResponse<Data>, completionHandler: @escaping ((DataResponse<ResponseType>) -> Void)) {
         switch response.result {
         case .failure(let error):
             self.complete(error: error, response: response, completionHandler: completionHandler)
         case .success(let value):
-            guard let value = value as? [String: Any] else {
-                let error = ResponseError.invalidResponse
-                self.complete(error: error, response: response, completionHandler: completionHandler)
-                return
-            }
-            
             do {
-                let object: ResponseType = try unbox(dictionary: value)
+                let object = try JSONDecoder().decode(ResponseType.self, from: value)
                 self.complete(object: object, response: response, completionHandler: completionHandler)
-            } catch let unboxError as UnboxError {
-                self.complete(error: unboxError, response: response, completionHandler: completionHandler)
             } catch {
                 let error = ResponseError.invalidResponse
                 self.complete(error: error, response: response, completionHandler: completionHandler)
