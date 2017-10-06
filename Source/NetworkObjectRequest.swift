@@ -72,8 +72,7 @@ public extension NetworkObjectRequest {
             do {
                 let object = try JSONDecoder().decode(ResponseType.self, from: value)
                 self.complete(object: object, response: response, completionHandler: completionHandler)
-            } catch {
-                let error = ResponseError.invalidResponse
+            } catch let error {
                 self.complete(error: error, response: response, completionHandler: completionHandler)
             }
         }
