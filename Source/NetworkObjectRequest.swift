@@ -3,7 +3,7 @@ import Alamofire
 import Foundation
 
 /// A protocol to define network requests that map directly to response objects
-public protocol NetworkObjectRequest: NetworkRequest {
+public protocol NetworkObjectRequest: NetworkDataRequest {
     /// The type of the response object
     associatedtype ResponseType: NetworkObjectResponse
 }
