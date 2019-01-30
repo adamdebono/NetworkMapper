@@ -68,7 +68,7 @@ public protocol NetworkRequest: URLRequestConvertible {
     /// - parameter error:  The error that caused the failure
     func onError(_ error: Error, request: URLRequest?) -> Void
 }
-public extension NetworkRequest {
+extension NetworkRequest {
     /// Creates a `RequestDetails` object based on the attributes of the
     /// instance
     public func getRequestDetails() -> RequestDetails {

@@ -5,7 +5,7 @@ public protocol NetworkDataRequest: NetworkRequest {
 
 }
 
-public extension NetworkDataRequest {
+extension NetworkDataRequest {
     /// Performs a network request based on the attributes of this instance, and
     /// retrieves the response json
     ///

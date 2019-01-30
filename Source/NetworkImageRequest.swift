@@ -9,7 +9,7 @@ import UIKit
 public protocol NetworkImageRequest: NetworkRequest {
 }
 
-public extension NetworkImageRequest {
+extension NetworkImageRequest {
 
     #if os(iOS) || os(tvOS) || os(watchOS)
 

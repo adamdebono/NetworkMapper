@@ -12,7 +12,7 @@ public protocol NetworkObjectResponse: Decodable {
 
 }
 
-public extension NetworkObjectRequest {
+extension NetworkObjectRequest {
     /// Performs a network request based on the attributes of this instance, and
     /// retrieves the response object
     ///
