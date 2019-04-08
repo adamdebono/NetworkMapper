@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "NetworkMapper"
-  s.version      = "1.1.3"
+  s.version      = "1.1.4"
   s.summary      = "A framework to map JSON responses to swift objects"
   s.homepage     = "http://github.com/adamdebono/NetworkMapper"
   s.license      = { :type => "MIT", :file => "LICENSE" }
@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/adamdebono/NetworkMapper.git", :tag => s.version }
   s.source_files = "Source/*.swift"
 
-  s.dependency "Alamofire", "~> 4.8.0"
-  s.dependency "AlamofireImage", "~> 3.5.0"
+  s.dependency "Alamofire", "~> 4.8.2"
+  s.dependency "AlamofireImage", "~> 3.5.2"
 end
